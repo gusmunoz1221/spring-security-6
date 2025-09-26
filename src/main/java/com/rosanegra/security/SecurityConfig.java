@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
 import javax.sql.DataSource;
 import javax.xml.crypto.Data;
 
@@ -25,6 +25,13 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults());   //configura que el metodo de autentificacion es http basic-> user y password
         return http.build();
     }
+
+    // BCrypt lo brinda spring security
+    @Bean
+    PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
 /*
     // Crea un UserDetailsService que usa JDBC para buscar usuarios y roles
     // directamente en la base de datos a través del DataSource proporcionado.
@@ -47,12 +54,13 @@ public class SecurityConfig {
                 .authorities("USER")
                 .build();
         return new InMemoryUserDetailsManager(admin,user);
-    } */
 
     //sirve cuando estamos desarrollando la seguridad desde cero. ya que la encriptacion toma tiempo
     @Bean
     PasswordEncoder passwordEncoder(){
         return NoOpPasswordEncoder.getInstance();
     }
+    } */
+
 
 }
