@@ -26,13 +26,20 @@ public class SecurityConfig {
         return http.build();
     }
 
+    //sirve cuando estamos desarrollando la seguridad desde cero. ya que la encriptacion toma tiempo
+    @Bean
+    PasswordEncoder passwordEncoder(){
+        return NoOpPasswordEncoder.getInstance();
+    }
+
+/*
+
     // BCrypt lo brinda spring security
     @Bean
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
-/*
     // Crea un UserDetailsService que usa JDBC para buscar usuarios y roles
     // directamente en la base de datos a través del DataSource proporcionado.
     @Bean
@@ -54,12 +61,6 @@ public class SecurityConfig {
                 .authorities("USER")
                 .build();
         return new InMemoryUserDetailsManager(admin,user);
-
-    //sirve cuando estamos desarrollando la seguridad desde cero. ya que la encriptacion toma tiempo
-    @Bean
-    PasswordEncoder passwordEncoder(){
-        return NoOpPasswordEncoder.getInstance();
-    }
     } */
 
 
