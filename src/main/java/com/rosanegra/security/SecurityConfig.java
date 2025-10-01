@@ -1,5 +1,6 @@
 package com.rosanegra.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,19 +11,36 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import javax.sql.DataSource;
-import javax.xml.crypto.Data;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
 
+
+    //inyectamos csrfTokenFilter
     @Bean//lo carga al contenedor de spring
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        var requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName("_csrf");
+
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/loans", "/balance","/accounts","/cards").authenticated()
                         .anyRequest().permitAll() )//->cualquier request que llege tiene que tener autentifiacion.
                         .formLogin(Customizer.withDefaults()) // configura el loggin
-                .httpBasic(Customizer.withDefaults());   //configura que el metodo de autentificacion es http basic-> user y password
+                        .httpBasic(Customizer.withDefaults());   //configura que el metodo de autentificacion es http basic-> user y password
+        http.cors(cors -> corsConfigurationSource());
+        http.csrf(csrf -> csrf
+                .csrfTokenRequestHandler(requestHandler)
+                .ignoringRequestMatchers("/welcome","/aboutUs")
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
         return http.build();
     }
 
@@ -30,6 +48,21 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder(){
         return NoOpPasswordEncoder.getInstance();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(){
+        var config = new CorsConfiguration();
+        //config.setAllowedOrigins(List.of("http://localhost:4200"));
+
+        //por ejemplo si la API fuese public
+        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
+        config.setAllowedHeaders(List.of("*"));
+
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**",config);
+        return source;
     }
 
 /*
