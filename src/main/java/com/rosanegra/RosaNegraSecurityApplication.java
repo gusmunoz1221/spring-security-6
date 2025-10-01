@@ -11,5 +11,4 @@ public class RosaNegraSecurityApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RosaNegraSecurityApplication.class, args);
 	}
-
 }
