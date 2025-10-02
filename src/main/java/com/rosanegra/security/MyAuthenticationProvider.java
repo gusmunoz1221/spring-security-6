@@ -26,10 +26,16 @@ public class MyAuthenticationProvider implements AuthenticationProvider {
 
        final var customerFromDb = this.customerRespository.findByEmail(username);
        final var customer = customerFromDb.orElseThrow(()-> new BadCredentialsException("invalidated credentials"));
-       final var customerPwd=  customer.getPwd();
+       final var customerPwd=  customer.getPassword();
 
        if(passwordEncoder.matches(psw,customerPwd)){
-           final var authorities = Collections.singletonList(new SimpleGrantedAuthority(customer.getRole()));
+           final var roles = customer.getRoles();
+
+         // una entity con roles->  Collections.singletonList(new SimpleGrantedAuthority(customer.getRole()));
+           final var authorities = roles
+                   .stream()
+                   .map(role -> new SimpleGrantedAuthority(role.getName()))
+                   .toList();
            return new UsernamePasswordAuthenticationToken(username,psw,authorities);
        }else throw new BadCredentialsException("invalidated credentials");
     }
