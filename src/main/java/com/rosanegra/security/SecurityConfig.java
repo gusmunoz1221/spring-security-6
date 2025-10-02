@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,6 +22,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+//@EnableMethodSecurity -->activa la seguridad a nivel de métodos
 public class SecurityConfig {
 
 
@@ -31,10 +33,15 @@ public class SecurityConfig {
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/loans", "/balance","/accounts","/cards").authenticated()
-                        .anyRequest().permitAll() )//->cualquier request que llege tiene que tener autentifiacion.
-                        .formLogin(Customizer.withDefaults()) // configura el loggin
-                        .httpBasic(Customizer.withDefaults());   //configura que el metodo de autentificacion es http basic-> user y password
+                        //.requestMatchers("/loans", "/balance","/accounts","/cards").authenticated()
+                        .requestMatchers("/balance","/loans").hasRole("USER")
+                        .requestMatchers("/accounts","/cards").hasRole("ADMIN")
+                        .anyRequest()
+                        .permitAll())//->cualquier request que llege tiene que tener autentifiacion.
+            .formLogin(Customizer.withDefaults()) // configura el loggin
+            .httpBasic(Customizer.withDefaults());   //configura que el metodo de autentificacion es http basic-> user y password
+
+
         http.cors(cors -> corsConfigurationSource());
         http.csrf(csrf -> csrf
                 .csrfTokenRequestHandler(requestHandler)

@@ -8,11 +8,10 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/aboutUs")
-public class AboutUs{
-
+@RequestMapping("/balance")
+public class BalanceController {
     @GetMapping
-    public Map<String,String> about(){
-        return Collections.singletonMap("msj","aboutUs");
+    public Map<String,String> cards(){
+        return Collections.singletonMap("msj","balance");
     }
 }

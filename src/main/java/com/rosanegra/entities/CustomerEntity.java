@@ -1,12 +1,10 @@
 package com.rosanegra.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigInteger;
+import java.util.List;
 
 
 @Data
@@ -14,10 +12,13 @@ import java.math.BigInteger;
 @Table(name = "customers")
 public class CustomerEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private BigInteger id;
     private String email;
     @Column(name = "pwd")
-    private String pwd;
-    @Column(name = "rol")
-    private String role;
+    private String password;
+
+    @OneToMany(fetch = FetchType.EAGER) //solo por que es small proyect
+    @JoinColumn(name = "id_customer")
+    private List<RoleEntity> roles;
 }

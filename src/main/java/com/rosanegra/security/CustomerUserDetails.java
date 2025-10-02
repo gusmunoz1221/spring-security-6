@@ -15,8 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @Transactional
 @Service
-public class CustomerUserDetails implements UserDetailsService {
-    private final CustomerRespository customerRespository;
+public class CustomerUserDetails /*implements UserDetailsService*/ {
+   /* private final CustomerRespository customerRespository;
 
 
     //el metodo se llama cuando alguien intenta autenticarse.
@@ -27,9 +27,9 @@ public class CustomerUserDetails implements UserDetailsService {
         return customerRespository.findByEmail(username)
                 .map(customer -> {
                     var authorities = List.of(new SimpleGrantedAuthority(customer.getRole()));
-                    return new User(customer.getEmail(),customer.getPwd(),authorities);
+                    return new User(customer.getEmail(),customer.getPassword(),authorities);
                 }).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-
+*/
 }
