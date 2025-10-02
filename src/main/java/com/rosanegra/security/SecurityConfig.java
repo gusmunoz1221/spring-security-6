@@ -29,6 +29,7 @@ public class SecurityConfig {
     //inyectamos csrfTokenFilter
     @Bean//lo carga al contenedor de spring
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.addFilterBefore(new ApiKey(),BasicAuthenticationFilter.class);
         var requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
