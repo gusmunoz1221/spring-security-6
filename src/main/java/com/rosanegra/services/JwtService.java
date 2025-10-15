@@ -39,7 +39,7 @@ public class JwtService {
         return expirationDate.before(new Date());
     }
 
-    private String getUsernameFromToken(String token){
+    public String getUsernameFromToken(String token){
         return getClaimsFromToken(token,Claims::getSubject);
     }
 

@@ -26,10 +26,13 @@ public class SecurityConfig {
 
     //inyectamos csrfTokenFilter
     @Bean//lo carga al contenedor de spring
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    //JwtValidationFilter -> inyectado
+    SecurityFilterChain securityFilterChain(HttpSecurity http,JwtValidationFilter jwtValidationFilter) throws Exception {
+        http.sessionManagement(sess -> sess
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-       // http.addFilterBefore(new ApiKey(),BasicAuthenticationFilter.class);
+        // http.addFilterBefore(new ApiKey(),BasicAuthenticationFilter.class);
+
         var requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
@@ -43,6 +46,7 @@ public class SecurityConfig {
             .httpBasic(Customizer.withDefaults());   //configura que el metodo de autentificacion es http basic-> user y password
 
 
+        http.addFilterBefore(   jwtValidationFilter,BasicAuthenticationFilter.class);
         http.cors(cors -> corsConfigurationSource());
         http.csrf(csrf -> csrf
                 .csrfTokenRequestHandler(requestHandler)
