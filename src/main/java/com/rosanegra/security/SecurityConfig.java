@@ -29,7 +29,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.addFilterBefore(new ApiKey(),BasicAuthenticationFilter.class);
+       // http.addFilterBefore(new ApiKey(),BasicAuthenticationFilter.class);
         var requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
