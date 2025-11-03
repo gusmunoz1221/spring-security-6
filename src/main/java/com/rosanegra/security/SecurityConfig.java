@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -25,14 +26,16 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Configuration
 public class SecurityConfig {
@@ -79,8 +82,10 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**") // Aplica a endpoints de API
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(ADMIN_RESOURCES).hasAuthority(AUTH_WRITE)
-                        .requestMatchers(USER_RESOURCES).hasAuthority(AUTH_READ)
+                        .requestMatchers(ADMIN_RESOURCES).hasRole(ROLE_ADMIN)
+                        .requestMatchers(USER_RESOURCES).hasRole(ROLE_USER)
+                    //    .requestMatchers(ADMIN_RESOURCES).hasAuthority(AUTH_WRITE)
+                    //    .requestMatchers(USER_RESOURCES).hasAuthority(AUTH_READ)
                         .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer(oauth ->
@@ -90,19 +95,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    @Order(3)
-    SecurityFilterChain userSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(ADMIN_RESOURCES).hasRole(ROLE_ADMIN)
-                        .requestMatchers(USER_RESOURCES).hasRole(ROLE_USER)
-                        .anyRequest().permitAll()
-                )
-                .formLogin(Customizer.withDefaults());
-
-        return http.build();
-    }
 
     @Bean
     AuthenticationProvider authenticationProvider(PasswordEncoder encoder, CustomerUserDetails userDetails){
@@ -132,10 +124,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter(JwtGrantedAuthoritiesConverter settings){
-        var converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(settings);
-        return converter;
+    JwtAuthenticationConverter jwtAuthenticationConverter(){
+        var authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        authoritiesConverter.setAuthoritiesClaimName("roles");
+        authoritiesConverter.setAuthorityPrefix("");
+        var converterResponse = new JwtAuthenticationConverter();
+        converterResponse.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+     //   converterResponse.setJwtGrantedAuthoritiesConverter(settings);
+        return converterResponse;
     }
 
     @Bean
@@ -150,18 +146,30 @@ public class SecurityConfig {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
+    @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> oAuth2TokenCustomizer(){
         //solo cuando es un access token
         return context -> {
-            if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)){
+            var authentication = context.getPrincipal();
+            var authorities = authentication.
+                    getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
+            if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
+                long timestamp = Instant.now().toEpochMilli();
+
                 context.getClaims().claims(claim ->
                         claim.putAll(Map.of(
-                                "owner",APPLICATION_OWNER,
-                                "date_request", LocalDateTime.now())
-                        ));
+                                "roles", authorities,
+                                "owner", APPLICATION_OWNER,
+                                "date_request", timestamp
+                        ))
+                );
             }
         };
     }
+
     private static KeyPair generateRsa() {
         try {
             var keyPairGenerator = KeyPairGenerator.getInstance(RSA);
