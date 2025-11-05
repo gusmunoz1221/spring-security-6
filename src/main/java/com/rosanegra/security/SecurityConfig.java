@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -166,6 +167,12 @@ public class SecurityConfig {
                                 "date_request", timestamp
                         ))
                 );
+            }
+
+            if(context.getTokenType().equals(OAuth2TokenType.REFRESH_TOKEN)){
+                context.getClaims().claims( claim -> {
+                    claim.put("refresh_token_info","Issued by RosaNegra");
+                });
             }
         };
     }

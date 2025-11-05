@@ -5,17 +5,17 @@
 --   password varchar(500) not null,
 --   enabled boolean not null
 --);
+-- relacion 1 a N
+create table authorities (
+    username varchar(50) not null,
+    authority varchar(50) not null,
+   constraint fk_authorities_users foreign key(username) references users(username)
+);
 
---create table authorities (
---    username varchar(50) not null,
---    authority varchar(50) not null,
---   constraint fk_authorities_users foreign key(username) references users(username)
---);
---
---create unique index ix_auth_username on authorities (
---                                                     username,
---                                                    authority);
---
+create unique index ix_auth_username on authorities (
+                                                     username,
+                                                    authority);
+
 
 create table customers(
         id bigserial primary key,
@@ -25,10 +25,10 @@ create table customers(
 
 create table roles(
         id bigserial primary key,
-        role_name varchar(50),
+       role_name varchar(50),
         description varchar(100),
         id_customer bigint,
-        constraint fk_customer foreign key(id_customer) references customers(id)
+       constraint fk_customer foreign key(id_customer) references customers(id)
 );
 
 create table partners (
@@ -42,13 +42,6 @@ create table partners (
                           redirect_uri varchar(256),
                           redirect_uri_logout varchar(256)
 );
-
-
-
-
-
-
-
 
 
 
